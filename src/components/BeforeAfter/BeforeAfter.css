@@ -1,0 +1,173 @@
+/* ── Sin JS (o antes de hidratar): las dos imágenes lado a lado, con sus etiquetas ── */
+.ba {
+  margin: 0;
+}
+
+.ba__stage {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-gutter);
+}
+
+@media (min-width: 768px) {
+  .ba__stage {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.ba__pane {
+  position: relative;
+  aspect-ratio: var(--ratio);
+  overflow: hidden;
+  background: var(--color-topo);
+}
+
+.ba__pane img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* Etiqueta sobre bloque grafito: legible sobre cualquier foto (arena sobre grafito, 5.89) */
+.ba__tag {
+  position: absolute;
+  bottom: clamp(0.75rem, 2vw, 1.25rem);
+  padding: 0.45em 0.9em 0.45em calc(0.9em + var(--tracking-label));
+  margin: 0;
+  background: var(--color-grafito);
+  color: var(--color-arena);
+  transition: opacity var(--duration-micro) var(--ease-lamina);
+}
+
+.ba__tag[data-side='before'] {
+  left: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.ba__tag[data-side='after'] {
+  right: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.ba__tag[data-covered] {
+  opacity: 0;
+}
+
+.ba__divider {
+  display: none;
+}
+
+/* ── Con JS: visor "La línea que transforma" ── */
+:root.js .ba__stage {
+  display: block;
+  position: relative;
+  aspect-ratio: var(--ratio);
+  /* Entra entero en pantalla: como máximo el 80 % del alto, sin perder la proporción */
+  max-width: min(100%, calc(80svh * var(--ratio-n, 1.6)));
+  margin-inline: auto;
+  overflow: hidden;
+  background: var(--color-topo);
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: ew-resize;
+}
+
+:root.js .ba__pane {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  background: transparent;
+}
+
+:root.js .ba__pane--after {
+  clip-path: inset(0 0 0 var(--pos));
+}
+
+:root.js .ba:not([data-loaded]) .ba__pane img {
+  opacity: 0;
+}
+
+:root.js .ba__pane img {
+  transition: opacity var(--duration-reveal) var(--ease-lamina);
+}
+
+:root.js .ba__divider {
+  display: block;
+  position: absolute;
+  inset: 0;
+  transform: translateX(var(--pos));
+  pointer-events: none;
+}
+
+.ba__line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  transform: translateX(-50%);
+  background: var(--color-arena);
+}
+
+.ba[data-tone='blanco'] .ba__line {
+  background: var(--color-blanco);
+}
+
+/* Tirador: 44×44 de área táctil, cuadrado visual de 36 */
+.ba__handle {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  cursor: grab;
+  color: var(--color-arena);
+  transition: color var(--duration-micro) var(--ease-lamina);
+}
+
+.ba__handle::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  background: var(--color-grafito);
+  border: 1px solid var(--color-arena);
+  transition: background-color var(--duration-micro) var(--ease-lamina);
+}
+
+.ba__handle svg {
+  position: relative;
+  width: 16px;
+  height: auto;
+}
+
+.ba__handle:active {
+  cursor: grabbing;
+}
+
+.ba__handle:focus-visible {
+  outline: var(--focus-width) solid var(--color-arena);
+  outline-offset: 2px;
+}
+
+.ba__handle:focus-visible {
+  color: var(--color-grafito);
+}
+
+.ba__handle:focus-visible::before {
+  background: var(--color-arena);
+}
+
+@media (hover: hover) {
+  .ba__handle:hover {
+    color: var(--color-grafito);
+  }
+  .ba__handle:hover::before {
+    background: var(--color-arena);
+  }
+}

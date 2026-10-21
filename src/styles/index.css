@@ -1,0 +1,856 @@
+@import 'tailwindcss';
+@import './fonts.css';
+
+/* ─────────────────────────────────────────────────────────────
+ * Tokens. Fuente: manual_alejandro.pdf (colores pág. 8, tipografía
+ * pág. 9, área de resguardo pág. 6). Ningún color, duración ni easing
+ * se escribe fuera de este bloque.
+ * ───────────────────────────────────────────────────────────── */
+@theme {
+  --color-*: initial;
+  --color-grafito: #45484f;
+  --color-negro: #1c1c1c;
+  --color-arena: #d3cfc6;
+  --color-topo: #837f76;
+  --color-gris: #8a8b8f;
+  --color-blanco: #ffffff;
+
+  --font-*: initial;
+  --font-sans: 'Neue Montreal', 'Helvetica Neue', Arial, sans-serif;
+
+  --radius-*: initial;
+  --shadow-*: initial;
+  --blur-*: initial;
+
+  /* Escala tipográfica fluida (360 → 1920px) */
+  --text-label: clamp(0.6875rem, 0.66rem + 0.12vw, 0.8125rem);
+  --text-label--line-height: 1.4;
+  --text-small: clamp(0.9375rem, 0.9rem + 0.15vw, 1rem);
+  --text-small--line-height: 1.5;
+  --text-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --text-body--line-height: 1.6;
+  --text-lead: clamp(1.125rem, 1rem + 0.55vw, 1.5rem);
+  --text-lead--line-height: 1.45;
+  /* Texto grande según WCAG (24px): el mínimo para texto sobre topo */
+  --text-large: 1.5rem;
+  --text-large--line-height: 1.35;
+  --text-h3: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
+  --text-h3--line-height: 1.1;
+  --text-h2: clamp(2.25rem, 1.4rem + 3.4vw, 4.75rem);
+  --text-h2--line-height: 0.98;
+  --text-display: clamp(2.75rem, 0.9rem + 7.6vw, 9rem);
+  --text-display--line-height: 0.92;
+  /* Tríada del hero: apilada en móvil, en una línea que ocupa todo el ancho en desktop */
+  --text-triad-stack: clamp(2.75rem, 12.5vw, 6rem);
+  --text-triad-stack--line-height: 0.9;
+  --text-triad-line: clamp(2.75rem, 4.5vw, 7.5rem);
+  --text-triad-line--line-height: 0.9;
+
+  --tracking-label: 0.3em;
+  --tracking-tight: -0.02em;
+  --tracking-display: -0.035em;
+
+  /* Espaciado */
+  --spacing-gutter: clamp(1rem, 0.4rem + 2.6vw, 3.5rem);
+  --spacing-section: clamp(6rem, 3.5rem + 9vw, 13rem);
+  --spacing-header: 5rem;
+  --container-site: 120rem;
+
+  /* Movimiento: preciso y sobrio, como un tiralíneas */
+  --ease-trazo: cubic-bezier(0.33, 0, 0.2, 1);
+  --ease-lamina: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-micro: 300ms;
+  --duration-reveal: 1000ms;
+  --duration-trazo-base: 600ms;
+  --duration-trazo-diag: 800ms;
+  --duration-sweep: 1600ms;
+  --duration-menu: 600ms;
+}
+
+:root {
+  /* Área de resguardo (pág. 6): 2 módulos de 21,5 pt sobre un lockup de 177 pt de alto
+   * = 24,3 % del alto del logo. Cada <Logo> define --logo-height. */
+  --logo-clearspace-ratio: 0.243;
+  --logo-clearspace: calc(var(--logo-height, 3rem) * var(--logo-clearspace-ratio));
+
+  /* Trama de monogramas: blanco al 7 % sobre grafito (portada), al 5 % sobre topo (pág. 18) */
+  --pattern-opacity: 0.07;
+  --pattern-opacity-topo: 0.05;
+
+  /* Alto total del header: barra + franja de la regla (la regla pasa al costado desde 1280px) */
+  --ruler-h: 1.25rem;
+  --header-h: calc(var(--spacing-header) + var(--ruler-h));
+
+  --hero-logo-height: clamp(8rem, 3.5rem + 12vw, 17rem);
+
+  --line: 1px;
+  --focus-width: 2px;
+  --focus-offset: 3px;
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --header-h: var(--spacing-header);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Temas de lámina. Solo combinaciones con contraste medido
+ * (ver alejandro.md §2). --theme-muted nunca baja de AA.
+ * ───────────────────────────────────────────────────────────── */
+@layer base {
+  :root,
+  .theme-arena,
+  [data-theme='arena'] {
+    --theme-bg: var(--color-arena);
+    --theme-fg: var(--color-negro);
+    --theme-muted: var(--color-grafito);
+    --theme-line: var(--color-gris);
+    --theme-focus: var(--color-negro);
+  }
+  .theme-grafito,
+  [data-theme='grafito'] {
+    --theme-bg: var(--color-grafito);
+    --theme-fg: var(--color-arena);
+    --theme-muted: var(--color-arena);
+    --theme-line: var(--color-gris);
+    --theme-focus: var(--color-arena);
+  }
+  .theme-negro,
+  [data-theme='negro'] {
+    --theme-bg: var(--color-negro);
+    --theme-fg: var(--color-arena);
+    --theme-muted: var(--color-gris);
+    --theme-line: var(--color-grafito);
+    --theme-focus: var(--color-arena);
+  }
+  /* Topo: solo texto grande en blanco (3.99). El cuerpo de texto no va sobre topo. */
+  .theme-topo,
+  [data-theme='topo'] {
+    --theme-bg: var(--color-topo);
+    --theme-fg: var(--color-blanco);
+    --theme-muted: var(--color-blanco);
+    --theme-line: var(--color-arena);
+    --theme-focus: var(--color-blanco);
+  }
+  .theme-blanco,
+  [data-theme='blanco'] {
+    --theme-bg: var(--color-blanco);
+    --theme-fg: var(--color-negro);
+    --theme-muted: var(--color-grafito);
+    --theme-line: var(--color-gris);
+    --theme-focus: var(--color-negro);
+  }
+  :is(.theme-arena, .theme-grafito, .theme-negro, .theme-topo, .theme-blanco, [data-theme]) {
+    background-color: var(--theme-bg);
+    color: var(--theme-fg);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-synthesis: none;
+    scroll-padding-top: var(--header-h);
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--theme-bg);
+    color: var(--theme-fg);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-radius: 0;
+  }
+
+  ::selection {
+    background-color: var(--theme-fg);
+    color: var(--theme-bg);
+  }
+
+  :focus-visible {
+    outline: var(--focus-width) solid var(--theme-focus, currentColor);
+    outline-offset: var(--focus-offset);
+  }
+
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+  /* <picture> no agrega caja: la imagen se mide contra su contenedor */
+  picture {
+    display: contents;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Componentes con estados que no conviene escribir en utilidades.
+ * ───────────────────────────────────────────────────────────── */
+@layer components {
+  /* Etiqueta en mayúsculas espaciadas, como el ARQUITECTO del logo */
+  .label {
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    font-weight: 500;
+    /* El tracking agrega aire al final: se compensa para centrar ópticamente */
+    margin-right: calc(var(--tracking-label) * -1);
+  }
+
+  /* Botón: rectangular, borde 1px. El hover rellena desde la base, como el trazo horizontal de la A. */
+  .btn {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9em;
+    min-height: 2.75rem;
+    padding: 0.85rem 1.5rem;
+    border: var(--line) solid var(--theme-fg);
+    color: var(--theme-fg);
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-label);
+    font-weight: 500;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    overflow: hidden;
+    transition: color var(--duration-micro) var(--ease-lamina);
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--theme-fg);
+    transform: scaleY(0);
+    transform-origin: 50% 100%;
+    transition: transform var(--duration-micro) var(--ease-lamina);
+  }
+  .btn--solid {
+    background: var(--theme-fg);
+    color: var(--theme-bg);
+  }
+  .btn--solid::before {
+    background: var(--theme-bg);
+  }
+  .btn .btn__arrow {
+    display: inline-block;
+    transition: transform var(--duration-micro) var(--ease-lamina);
+  }
+  @media (hover: hover) {
+    .btn:hover {
+      color: var(--theme-bg);
+    }
+    .btn--solid:hover {
+      color: var(--theme-fg);
+    }
+    .btn:hover::before {
+      transform: scaleY(1);
+    }
+    .btn:hover .btn__arrow {
+      transform: translateX(5px);
+    }
+  }
+  .btn:focus-visible {
+    outline-offset: var(--focus-offset);
+  }
+
+  /* Link de texto: la línea de 1px se retira hacia la derecha y vuelve a dibujarse */
+  .link-line {
+    position: relative;
+    color: inherit;
+    text-decoration: none;
+  }
+  .link-line::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.15em;
+    height: var(--line);
+    background: currentColor;
+    transform-origin: 100% 50%;
+    transition: transform var(--duration-micro) var(--ease-trazo);
+  }
+  @media (hover: hover) {
+    .link-line:hover::after {
+      transform: scaleX(0);
+    }
+  }
+
+  /* Hero: la trama ocupa una franja con borde diagonal, como la portada del manual */
+  .hero-pattern {
+    clip-path: polygon(0 0, 30% 0, 62% 100%, 0 100%);
+  }
+  @media (max-width: 1023.98px) {
+    .hero-pattern {
+      clip-path: polygon(0 0, 55% 0, 100% 70%, 100% 100%, 0 100%);
+    }
+  }
+  /* Mientras GSAP no fija el estado inicial del dibujo, el logo no se muestra (evita el destello) */
+  :root.motion .hero-logo {
+    visibility: hidden;
+  }
+
+  /* ── Regla de progreso ── */
+  .ruler {
+    /* El tema solo aporta los colores: la regla nunca pinta un fondo */
+    background-color: transparent;
+    color: var(--theme-line);
+    font-size: 0.5625rem;
+    letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
+  }
+  .ruler__scale {
+    position: absolute;
+  }
+  .ruler__tick {
+    position: absolute;
+    background: currentColor;
+  }
+  .ruler__num {
+    position: absolute;
+    color: var(--theme-muted);
+    line-height: 1;
+  }
+  .ruler__progress {
+    position: absolute;
+    background: var(--theme-fg);
+  }
+
+  .ruler--horizontal {
+    position: relative;
+    height: var(--ruler-h);
+  }
+  .ruler--horizontal .ruler__scale {
+    inset: 0 var(--spacing-gutter);
+  }
+  .ruler--horizontal .ruler__tick {
+    bottom: 0;
+    width: 1px;
+    height: 3px;
+  }
+  .ruler--horizontal .ruler__tick.is-half {
+    height: 5px;
+  }
+  .ruler--horizontal .ruler__tick.is-major {
+    height: 7px;
+  }
+  .ruler--horizontal .ruler__num {
+    bottom: 9px;
+    left: 0;
+    transform: translateX(-50%);
+  }
+  .ruler--horizontal .ruler__progress {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+
+  .ruler--vertical {
+    position: fixed;
+    z-index: 40;
+    right: 0;
+    top: calc(var(--spacing-header) + 1.5rem);
+    bottom: 1.5rem;
+    width: var(--spacing-gutter);
+  }
+  .ruler--vertical .ruler__scale {
+    top: 0;
+    bottom: 3rem;
+    right: 0.375rem;
+    width: 1.5rem;
+  }
+  .ruler--vertical .ruler__tick {
+    right: 0;
+    height: 1px;
+    width: 3px;
+  }
+  .ruler--vertical .ruler__tick.is-half {
+    width: 5px;
+  }
+  .ruler--vertical .ruler__tick.is-major {
+    width: 8px;
+  }
+  .ruler--vertical .ruler__num {
+    right: 11px;
+    top: 0;
+    transform: translateY(-50%);
+  }
+  .ruler--vertical .ruler__progress {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 2px;
+    transform: scaleY(0);
+    transform-origin: 50% 0;
+  }
+  .ruler--vertical .ruler__label {
+    position: absolute;
+    right: 0.375rem;
+    bottom: 0;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    margin: 0;
+    white-space: nowrap;
+    color: var(--theme-fg);
+    font-size: 0.5625rem;
+  }
+
+  /* ── Lámina que se corre (WipeFigure) ── */
+  .wipe-line {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+  .wipe-line > span {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    background: var(--color-arena);
+  }
+
+  /* ── Proceso: bloques apilados; en desktop con movimiento, lámina fijada ── */
+  .proceso-pin {
+    padding-block: var(--spacing-section);
+  }
+  .proceso-grid {
+    display: grid;
+    gap: clamp(3rem, 2rem + 4vw, 6rem);
+  }
+  .proceso-list {
+    display: grid;
+    gap: clamp(3.5rem, 2rem + 5vw, 7rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .step {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .step__word {
+    font-weight: 500;
+  }
+  .proceso-cota {
+    display: none;
+  }
+  @media (min-width: 1024px) {
+    .step {
+      grid-template-columns: 5fr 7fr;
+      gap: var(--spacing-gutter);
+      align-items: center;
+    }
+  }
+
+  .proceso.is-pinned .proceso-pin {
+    display: flex;
+    align-items: center;
+    height: 100svh;
+    padding-block: calc(var(--header-h) + 1.5rem) 2rem;
+  }
+  .proceso.is-pinned .proceso-pin > * {
+    height: 100%;
+  }
+  .proceso.is-pinned .proceso-grid {
+    height: 100%;
+    grid-template-columns: 5fr 7fr;
+    grid-template-rows: auto auto auto auto 1fr;
+    column-gap: var(--spacing-gutter);
+    row-gap: 1.75rem;
+  }
+  .proceso.is-pinned .proceso-head {
+    grid-column: 1;
+    grid-row: 1;
+    margin-bottom: 1.5rem;
+  }
+  .proceso.is-pinned .proceso-list,
+  .proceso.is-pinned .step {
+    display: contents;
+  }
+  .proceso.is-pinned .step__text {
+    grid-column: 1;
+  }
+  .proceso.is-pinned .step:nth-child(1) .step__text {
+    grid-row: 2;
+  }
+  .proceso.is-pinned .step:nth-child(2) .step__text {
+    grid-row: 3;
+  }
+  .proceso.is-pinned .step:nth-child(3) .step__text {
+    grid-row: 4;
+  }
+  .proceso.is-pinned .step__fig {
+    grid-column: 2;
+    grid-row: 1 / 5;
+    align-self: center;
+  }
+  /* Fijada, la planta sola no hace falta: el corte de obra se dibuja desde cero */
+  .proceso.is-pinned .step:nth-child(1) .step__fig {
+    display: none;
+  }
+  .proceso.is-pinned .proceso-cota {
+    display: block;
+    grid-column: 2;
+    grid-row: 5;
+    align-self: start;
+  }
+  /* El paso activo en Bold; el resto en Regular grafito (gris sobre arena no alcanza contraste) */
+  .proceso.is-pinned .step__word {
+    font-weight: 400;
+    color: var(--theme-muted);
+  }
+  .proceso.is-pinned .step[data-active] .step__word {
+    font-weight: 700;
+    color: var(--theme-fg);
+  }
+
+  /* ── Proyectos: carrusel nativo con snap; en desktop con movimiento, horizontal con scrub ── */
+  .gallery-pin {
+    --gallery-inset: max(
+      var(--spacing-gutter),
+      calc((100vw - var(--container-site)) / 2 + var(--spacing-gutter))
+    );
+    padding-block: var(--spacing-section) calc(var(--spacing-section) * 0.6);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
+  }
+  .gallery-track {
+    display: flex;
+    gap: var(--spacing-gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    padding-inline: var(--gallery-inset);
+    scroll-padding-inline: var(--gallery-inset);
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--theme-line) transparent;
+  }
+  .project-card {
+    flex: 0 0 82%;
+    scroll-snap-align: start;
+  }
+  @media (min-width: 768px) {
+    .project-card {
+      flex-basis: 56%;
+    }
+  }
+  @media (min-width: 1024px) {
+    .project-card {
+      flex-basis: clamp(24rem, 36vw, 40rem);
+    }
+  }
+  .project-card__img {
+    width: 100%;
+  }
+  .project-card__arrow {
+    transition: transform var(--duration-micro) var(--ease-lamina);
+  }
+  @media (hover: hover) {
+    .project-card a:hover .project-card__arrow {
+      transform: translateX(5px);
+    }
+  }
+
+  .proyectos.is-pinned .gallery-pin {
+    height: 100svh;
+    justify-content: center;
+    padding-block: calc(var(--header-h) + 1.5rem) 2rem;
+  }
+  .proyectos.is-pinned .gallery-track {
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .proyectos.is-pinned .project-card {
+    flex-basis: clamp(22rem, 32vw, 38rem);
+  }
+  /* La foto es un 8 % más ancha que su marco para el parallax de ±4 % */
+  .proyectos.is-pinned .project-card__img {
+    width: 108%;
+    max-width: none;
+    margin-left: -4%;
+  }
+
+  /* ── Ficha de proyecto → WhatsApp ── */
+  .ficha {
+    border: var(--line) solid var(--theme-fg);
+  }
+  .ficha__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 3rem;
+    padding: 0.75rem clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
+    background: var(--color-grafito);
+    color: var(--color-arena);
+  }
+  .ficha__input {
+    width: 100%;
+    max-width: 26rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0;
+    border: 0;
+    border-bottom: var(--line) solid var(--theme-muted);
+    background: transparent;
+    color: var(--theme-fg);
+    font: inherit;
+    font-size: var(--text-body);
+  }
+  .ficha__input::placeholder {
+    color: var(--theme-muted);
+    opacity: 0.75;
+  }
+  .ficha__input:focus-visible {
+    outline: var(--focus-width) solid var(--theme-focus);
+    outline-offset: 4px;
+  }
+
+  /* Opción: rectangular, borde 1px; el relleno entra desde la base al elegirla */
+  .chip {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.55rem 1rem;
+    border: var(--line) solid var(--theme-muted);
+    font-size: var(--text-small);
+    cursor: pointer;
+    overflow: hidden;
+    transition: color var(--duration-micro) var(--ease-lamina);
+  }
+  .chip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--theme-fg);
+    transform: scaleY(0);
+    transform-origin: 50% 100%;
+    transition: transform var(--duration-micro) var(--ease-lamina);
+  }
+  .chip:has(input:checked) {
+    color: var(--theme-bg);
+    border-color: var(--theme-fg);
+  }
+  .chip:has(input:checked)::before {
+    transform: scaleY(1);
+  }
+  @media (hover: hover) {
+    .chip:hover {
+      border-color: var(--theme-fg);
+    }
+  }
+  .chip:has(input:focus-visible) {
+    outline: var(--focus-width) solid var(--theme-focus);
+    outline-offset: 2px;
+  }
+
+  /* Línea de corte A–A': trazo y punto, con las letras de corte en los extremos */
+  .ficha__cut {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
+    color: var(--theme-fg);
+  }
+  .ficha__cut-line {
+    flex: 1;
+    width: 100%;
+    height: var(--line);
+    overflow: visible;
+  }
+  .ficha__cut-line--v {
+    display: none;
+  }
+  .ficha__cut-mark {
+    font-size: var(--text-label);
+    font-weight: 700;
+    line-height: 1;
+  }
+  @media (min-width: 1024px) {
+    .ficha__cut {
+      flex-direction: column;
+      padding: 1rem 0;
+      width: 2.5rem;
+    }
+    .ficha__cut-line--h {
+      display: none;
+    }
+    .ficha__cut-line--v {
+      display: block;
+      width: var(--line);
+      height: auto;
+    }
+  }
+
+  /* ── Menú móvil: popover nativo que baja como una lámina; los links entran en cascada ── */
+  .site-menu {
+    position: fixed;
+    inset: var(--header-h) 0 0 0;
+    width: 100%;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    clip-path: inset(0 0 0 0);
+    transition:
+      clip-path var(--duration-menu) var(--ease-lamina),
+      display var(--duration-menu) allow-discrete,
+      overlay var(--duration-menu) allow-discrete;
+  }
+  .site-menu:not(:popover-open) {
+    clip-path: inset(0 0 100% 0);
+  }
+  @starting-style {
+    .site-menu:popover-open {
+      clip-path: inset(0 0 100% 0);
+    }
+  }
+  .site-menu::backdrop {
+    background: transparent;
+  }
+  .site-menu__item {
+    position: relative;
+    transition:
+      opacity var(--duration-micro) var(--ease-lamina),
+      transform var(--duration-reveal) var(--ease-lamina);
+    transition-delay: calc(var(--duration-micro) * 0.5 + var(--i, 0) * 60ms);
+  }
+  .site-menu:not(:popover-open) .site-menu__item {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition-delay: 0ms;
+  }
+  @starting-style {
+    .site-menu:popover-open .site-menu__item {
+      opacity: 0;
+      transform: translateY(1.25rem);
+    }
+  }
+  /* La línea entre links se dibuja de izquierda a derecha */
+  .site-menu__rule {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--line);
+    background: var(--theme-line);
+    transform-origin: 0 50%;
+    transition: transform var(--duration-reveal) var(--ease-trazo);
+    transition-delay: calc(var(--duration-micro) + var(--i, 0) * 60ms);
+  }
+  .site-menu:not(:popover-open) .site-menu__rule {
+    transform: scaleX(0);
+    transition-delay: 0ms;
+  }
+  @starting-style {
+    .site-menu:popover-open .site-menu__rule {
+      transform: scaleX(0);
+    }
+  }
+  /* Sin Popover API: el menú se muestra con un atributo */
+  @supports not selector(:popover-open) {
+    .site-menu {
+      display: none;
+    }
+    .site-menu[data-fallback-open] {
+      display: block;
+    }
+  }
+
+  /* Con el menú abierto, el header pasa a negro: header y menú se leen como una sola lámina */
+  .site-header[data-open='true'] {
+    --theme-bg: var(--color-negro);
+    --theme-fg: var(--color-arena);
+    --theme-muted: var(--color-gris);
+    --theme-line: var(--color-grafito);
+    --theme-focus: var(--color-arena);
+  }
+
+  /* Botón Menú/Cerrar: se rellena desde la base mientras el menú está abierto */
+  .menu-toggle {
+    display: inline-grid;
+  }
+  .menu-toggle__label {
+    grid-area: 1 / 1;
+    transition:
+      opacity var(--duration-micro) var(--ease-lamina),
+      transform var(--duration-micro) var(--ease-lamina);
+  }
+  .menu-toggle__label--close {
+    opacity: 0;
+    transform: translateY(0.6em);
+  }
+  .site-header[data-open='true'] .menu-toggle {
+    color: var(--theme-bg);
+  }
+  .site-header[data-open='true'] .menu-toggle::before {
+    transform: scaleY(1);
+  }
+  .site-header[data-open='true'] .menu-toggle__label--open {
+    opacity: 0;
+    transform: translateY(-0.6em);
+  }
+  .site-header[data-open='true'] .menu-toggle__label--close {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    transition:
+      background-color var(--duration-micro) var(--ease-lamina),
+      color var(--duration-micro) var(--ease-lamina);
+  }
+
+  .skip-link {
+    position: fixed;
+    top: var(--spacing-gutter);
+    left: var(--spacing-gutter);
+    z-index: 100;
+    transform: translateY(-200%);
+  }
+  .skip-link:focus-visible {
+    transform: none;
+  }
+}

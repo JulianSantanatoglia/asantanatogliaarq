@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#45484F" />
+    <!-- [PENDIENTE] Activar cuando estén los .woff2 licenciados de Neue Montreal (peso del hero) -->
+    <!-- <link rel="preload" href="/fonts/NeueMontreal-Medium.woff2" as="font" type="font/woff2" crossorigin /> -->
+    <script>
+      // .js: hay JavaScript (el visor pasa a modo comparación sin salto de layout).
+      // .motion: además no hay reduced motion (las animaciones fijan su estado inicial).
+      // Si la app no hidrata en 4 s, se vuelve a la versión estática.
+      ;(function (c) {
+        c.add('js')
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) c.add('motion')
+        setTimeout(function () {
+          if (!window.__hydrated) c.remove('js', 'motion')
+        }, 4000)
+      })(document.documentElement.classList)
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
